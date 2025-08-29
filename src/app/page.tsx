@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import { Calendar, Clock, User, Menu, X } from "lucide-react";
+import Image from "next/image";
 
 const BarbellLanding = () => {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [selectedTime, setSelectedTime] = useState<String | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Generate calendar days for current month
@@ -81,7 +82,12 @@ const BarbellLanding = () => {
             {/* Logo */}
             <div className="flex items-center">
   <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-    <img src="/img/logo.png" alt="Logo" className="h-16" />
+   <Image
+  src="/img/logo.png"
+  alt="Barbell Logo"
+  width={64}
+  height={64}
+/>
     BARBELL
   </h1>
 </div>
