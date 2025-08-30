@@ -8,6 +8,24 @@ const BarbellLanding = () => {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [remark, setRemark] = useState("");
+  const [service, setService] = useState("");
+
+  const handleBook = (e: React.FormEvent) => {
+    e.preventDefault(); // prevent page reload if inside a <form>
+
+    // for now just alert
+    alert(
+      `Name: ${name}\nPhone: ${phone}\nService: ${service}\nRemark: ${remark}`
+    );
+
+    setName("");
+    setPhone("");
+    setRemark("");
+    setService("");
+  };
 
   // Generate calendar days for current month
   const generateCalendar = () => {
@@ -21,12 +39,10 @@ const BarbellLanding = () => {
 
     const days = [];
 
-    // Add empty cells for days before month starts
     for (let i = 0; i < startDay; i++) {
       days.push(null);
     }
 
-    // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(day);
     }
@@ -35,24 +51,30 @@ const BarbellLanding = () => {
   };
 
   const timeSlots = [
+    "12:00 AM",
+    "1:00 AM",
+    "2:00 AM",
+    "3:00 AM",
+    "4:00 AM",
+    "5:00 AM",
+    "6:00 AM",
+    "7:00 AM",
+    "8:00 AM",
     "9:00 AM",
-    "9:30 AM",
     "10:00 AM",
-    "10:30 AM",
     "11:00 AM",
-    "11:30 AM",
     "12:00 PM",
-    "12:30 PM",
     "1:00 PM",
-    "1:30 PM",
     "2:00 PM",
-    "2:30 PM",
     "3:00 PM",
-    "3:30 PM",
     "4:00 PM",
-    "4:30 PM",
     "5:00 PM",
-    "5:30 PM",
+    "6:00 PM",
+    "7:00 PM",
+    "8:00 PM",
+    "9:00 PM",
+    "10:00 PM",
+    "11:00 PM",
   ];
 
   const monthNames = [
@@ -81,26 +103,19 @@ const BarbellLanding = () => {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <div className="flex items-center">
-  <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-   <Image
-  src="/img/logo.png"
-  alt="Barbell Logo"
-  width={64}
-  height={64}
-/>
-    BARBELL
-  </h1>
-</div>
-
+              <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                <Image
+                  src="/img/logo.png"
+                  alt="Barbell Logo"
+                  width={64}
+                  height={64}
+                />
+                BARBELL
+              </h1>
+            </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              
-              <button className="bg-white text-black px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300 hover:cursor-pointer" 
-              onClick={ () => {window.location.href = "/login";}}>
-                Login
-              </button>
-            </div>
+            <div className="hidden md:flex items-center space-x-8"></div>
 
             {/* Mobile menu button */}
             <div className="md:hidden">
@@ -117,13 +132,7 @@ const BarbellLanding = () => {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-black/95 border-t border-white/10">
-            <div className="px-4 pt-4 pb-6 space-y-4">
-              
-              <button className="w-full bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                onClick={ () => {window.location.href = "/login";}}>
-                Login
-              </button>
-            </div>
+            <div className="px-4 pt-4 pb-6 space-y-4"></div>
           </div>
         )}
       </nav>
@@ -131,8 +140,8 @@ const BarbellLanding = () => {
       {/* Hero Section */}
       <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-            Book Your Cut
+          <h2 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text">
+            💈Book Your Cut
           </h2>
           <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
             Premium grooming experience. Select your preferred date and time
@@ -182,7 +191,7 @@ const BarbellLanding = () => {
                         }
                         ${
                           selectedDate === day
-                            ? "bg-white text-black font-bold"
+                            ? "bg-gray-500 text-black font-bold"
                             : "hover:bg-white/10"
                         }
                       `}
@@ -245,7 +254,68 @@ const BarbellLanding = () => {
                     <User className="w-8 h-8 text-gray-400" />
                   </div>
 
-                  <button className="w-full bg-white text-black py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105">
+                  <form method="dialog" className="space-y-6">
+                    {/* Name */}
+                    <div>
+                      <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
+                        placeholder="Your Name"
+                        onChange={(e) => setName(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
+                        placeholder="e.g. 012-3456789"
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Service Selection */}
+                    <div>
+                      <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                        Service
+                      </label>
+                      <select
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800"
+                        onChange={(e) => setService(e.target.value)}
+                      >
+                        <option value="">Select a service</option>
+                        <option value="haircut">Haircut - RM20</option>
+                        <option value="beard-trim">Beard Trim - RM0-RM5</option>
+                        <option value="hair-colour">Hair Colour - RM30</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                        Special Remarks / Requests
+                      </label>
+                      <textarea
+                        rows={3}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
+                        placeholder="Any special requests..."
+                        onChange={(e) => setRemark(e.target.value)}
+                      ></textarea>
+                    </div>
+                  </form>
+
+                  <button
+                    className="w-full bg-white text-black py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 mt-4"
+                    onClick={handleBook}
+                  >
                     Book Appointment
                   </button>
                 </div>
@@ -282,6 +352,7 @@ const BarbellLanding = () => {
         </div>
       </section>
 
+      {/* Qr Code */}
       <section className="px-4 sm:px-6 lg:px-8 pb-20">
         <div className="max-w-3xl mx-auto text-center">
           <h3 className="text-3xl font-bold text-white mb-6">Pay Easily</h3>
@@ -308,9 +379,98 @@ const BarbellLanding = () => {
           <p className="text-gray-400 mb-6">
             Premium grooming for the modern gentleman
           </p>
-    
         </div>
       </footer>
+
+      <dialog id="bookModal" className="modal">
+        <div className="modal-box bg-gray-500 rounded-2xl max-w-lg">
+          <h3 className="font-bold text-lg mb-4 text-white">Booking Form</h3>
+          <div className="bg-white/20 p-4 rounded-lg mb-6 text-white">
+            <p className="font-semibold">
+              📅 {currentMonth} {selectedDate}, {currentYear}
+            </p>
+            <p className="font-semibold">⏰ {selectedTime}</p>
+          </div>
+          <form method="dialog" className="space-y-6">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                Name
+              </label>
+              <input
+                type="text"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
+                placeholder="Your Name"
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
+                placeholder="e.g. 012-3456789"
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+
+            {/* Service Selection */}
+            <div>
+              <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                Service
+              </label>
+              <select
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800"
+                onChange={(e) => setService(e.target.value)}
+              >
+                <option value="">Select a service</option>
+                <option value="haircut">Haircut - RM20</option>
+                <option value="beard-trim">Beard Trim - RM0-RM5</option>
+                <option value="hair-colour">Hair Colour - RM30</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                Special Remarks / Requests
+              </label>
+              <textarea
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
+                placeholder="Any special requests..."
+                onChange={(e) => setRemark(e.target.value)}
+              ></textarea>
+            </div>
+
+            <div className="modal-action flex justify-end gap-3">
+              <button
+                type="button"
+                className="btn rounded-2xl"
+                onClick={() =>
+                  (
+                    document.getElementById("bookModal") as HTMLDialogElement
+                  ).close()
+                }
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn bg-white text-black rounded-2xl font-semibold hover:bg-gray-200 transition-all"
+                onClick={handleBook}
+              >
+                Confirm Booking
+              </button>
+            </div>
+          </form>
+        </div>
+      </dialog>
     </div>
   );
 };
