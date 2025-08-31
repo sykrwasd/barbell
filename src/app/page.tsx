@@ -16,7 +16,6 @@ const BarbellLanding = () => {
   const handleBook = (e: React.FormEvent) => {
     e.preventDefault(); // prevent page reload if inside a <form>
 
-    // for now just alert
     alert(
       `Name: ${name}\nPhone: ${phone}\nService: ${service}\nRemark: ${remark}`
     );
@@ -114,18 +113,7 @@ const BarbellLanding = () => {
               </h1>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8"></div>
-
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-white hover:text-gray-300 transition-colors"
-              >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            </div>
+    
           </div>
         </div>
 
@@ -309,6 +297,9 @@ const BarbellLanding = () => {
                         placeholder="Any special requests..."
                         onChange={(e) => setRemark(e.target.value)}
                       ></textarea>
+
+                
+
                     </div>
                   </form>
 
@@ -318,6 +309,8 @@ const BarbellLanding = () => {
                   >
                     Book Appointment
                   </button>
+
+                 
                 </div>
               </div>
             )}
@@ -382,95 +375,9 @@ const BarbellLanding = () => {
         </div>
       </footer>
 
-      <dialog id="bookModal" className="modal">
-        <div className="modal-box bg-gray-500 rounded-2xl max-w-lg">
-          <h3 className="font-bold text-lg mb-4 text-white">Booking Form</h3>
-          <div className="bg-white/20 p-4 rounded-lg mb-6 text-white">
-            <p className="font-semibold">
-              📅 {currentMonth} {selectedDate}, {currentYear}
-            </p>
-            <p className="font-semibold">⏰ {selectedTime}</p>
-          </div>
-          <form method="dialog" className="space-y-6">
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
-                Name
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
-                placeholder="Your Name"
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
+        
+      
 
-            <div>
-              <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
-                placeholder="e.g. 012-3456789"
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-
-            {/* Service Selection */}
-            <div>
-              <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
-                Service
-              </label>
-              <select
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800"
-                onChange={(e) => setService(e.target.value)}
-              >
-                <option value="">Select a service</option>
-                <option value="haircut">Haircut - RM20</option>
-                <option value="beard-trim">Beard Trim - RM0-RM5</option>
-                <option value="hair-colour">Hair Colour - RM30</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
-                Special Remarks / Requests
-              </label>
-              <textarea
-                rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800 placeholder-gray-500"
-                placeholder="Any special requests..."
-                onChange={(e) => setRemark(e.target.value)}
-              ></textarea>
-            </div>
-
-            <div className="modal-action flex justify-end gap-3">
-              <button
-                type="button"
-                className="btn rounded-2xl"
-                onClick={() =>
-                  (
-                    document.getElementById("bookModal") as HTMLDialogElement
-                  ).close()
-                }
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn bg-white text-black rounded-2xl font-semibold hover:bg-gray-200 transition-all"
-                onClick={handleBook}
-              >
-                Confirm Booking
-              </button>
-            </div>
-          </form>
-        </div>
-      </dialog>
     </div>
   );
 };

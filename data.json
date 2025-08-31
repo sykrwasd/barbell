@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Ali Bin Ahmad",
+    "phone_number": "0123456789",
+    "service": "Haircut",
+    "remarks": "No remarks"
+  },
+  {
+    "name": "Siti Nur",
+    "phone_number": "0198765432",
+    "service": "Beard Trim",
+    "remarks": "Gentle trim"
+  },
+  {
+    "name": "John Doe",
+    "phone_number": "0112233445",
+    "service": "Hair Colour",
+    "remarks": "Use natural colour"
+  },
+  {
+    "name": "Mary Jane",
+    "phone_number": "0173344556",
+    "service": "Haircut",
+    "remarks": "Short style"
+  },
+  {
+    "name": "Ahmad Faiz",
+    "phone_number": "0145566778",
+    "service": "Beard Trim",
+    "remarks": "Keep it neat"
+  }
+]
