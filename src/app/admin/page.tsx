@@ -64,7 +64,7 @@ const BarbellAdmin = () => {
     return days;
   };
 
-const toggleDateAvailability = (dateStr: string, day: any) => {
+const toggleDateAvailability = (dateStr: string, day: number) => {
   const today = new Date();
   const selectedDate = new Date(dateStr);
 
@@ -121,7 +121,7 @@ const toggleDateAvailability = (dateStr: string, day: any) => {
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Today's Revenue</p>
+                  <p className="text-gray-400 text-sm">Todays Revenue</p>
                   <p className="text-2xl font-bold text-white">$115</p>
                 </div>
                 <DollarSign className="w-8 h-8 text-green-400" />
@@ -398,6 +398,14 @@ const toggleDateAvailability = (dateStr: string, day: any) => {
           </div>
         </div>
       </div>
+      <footer className="bg-black py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-2xl font-bold text-white mb-4">BARBELL</h3>
+          <p className="text-gray-400 mb-6">
+            Premium grooming for the modern gentleman
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
