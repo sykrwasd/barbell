@@ -178,7 +178,7 @@ const filteredCustomers = cust.filter((customer) =>
         });
         setTimeout(() => {
           router.push("/");
-        }, 500);
+        }, 250);
       } else {
         (
           document.getElementById("passwordModal") as HTMLDialogElement
@@ -254,9 +254,16 @@ const filteredCustomers = cust.filter((customer) =>
     } catch {}
   };
 
-  const handleConfirm = async () => {
-    window.location.reload();
-  };
+  const handleConfirm = () => {
+  setDate((prev) =>
+    prev.map((d) =>
+      selectedDates.includes(d.dateStr)
+        ? { ...d, isOpen: !d.isOpen }
+        : d
+    )
+  );
+  setSelectedDates([]); // clear selections
+};
 
 
   const handleUpdate = (c: Customer) => {
