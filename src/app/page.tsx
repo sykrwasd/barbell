@@ -272,7 +272,7 @@ const BarbellLanding = () => {
                         ${
                           !isAvailable || isPast
                             ? "text-white cursor-not-allowed"
-                            : "text-gray-500 hover:bg-green-400 cursor-pointer bg-green-300"
+                            : "bg-green-500/20 text-green-400 border border-green-500/30"
                         }
                         ${isSelected ? "bg-gray-500 text-black font-bold" : ""}
                       `}
