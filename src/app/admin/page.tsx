@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   Calendar,
   Clock,
@@ -25,6 +25,8 @@ import {
   Bar,
 } from "recharts";
 
+import { DataTableComponent } from "datatables.net-react";
+
 type Customer = {
   _id: string;
   name: string;
@@ -36,12 +38,21 @@ type Customer = {
   price: number;
 };
 
+type Date = {
+  _id: string;
+  dateStr: string;
+  isOpen: boolean;
+};
+
 const BarbellAdmin = () => {
   const [cust, setCustomer] = useState<Customer[]>([]);
   const [showAllAppointments, setShowAllAppointments] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
+  const [date, setDate] = useState<Date[]>([]);
 
   useEffect(() => {
     fetchCustomer();
+    fetchDate();
   }, []);
 
   async function fetchCustomer() {
@@ -50,25 +61,30 @@ const BarbellAdmin = () => {
       const data = await res.json();
       setCustomer(data);
       console.log(data);
-
-      
     } catch (e) {
       console.error("Error fetching items:", e);
     }
   }
 
-  const [availableDates, setAvailableDates] = useState([
-    "2025-09-01",
-    "2025-09-02",
-    "2025-09-03",
-    "2025-09-05",
-    "2025-09-06",
-    "2025-09-09",
-    "2025-09-10",
-    "2025-09-12",
-    "2025-09-13",
-    "2025-09-16",
-  ]);
+  //fetching every date in Database
+  async function fetchDate() {
+    try {
+      const res = await fetch("/api/getDate");
+      const data = await res.json();
+
+      const formatted = data.map((d: any) => ({
+        dateStr: new Date(d.date).toISOString().split("T")[0],
+        isOpen: d.isOpen,
+      }));
+
+      setDate(formatted);
+      console.log(formatted);
+    } catch (e) {
+      console.error("Error fetching items:", e);
+    }
+  }
+
+   const [selectedDates, setSelectedDates] = useState<string[]>([]);
 
   const [selectedDateToToggle, setSelectedDateToToggle] = useState<
     string | null
@@ -95,7 +111,6 @@ const BarbellAdmin = () => {
   const currentYear = now.getFullYear();
   const currentMonth = monthNames[currentMonthIndex];
 
-
   // Stats
   const todaysAppointments = cust.filter((c) => c.date_book === todayStr);
   const todaysRevenue = todaysAppointments.reduce((sum, c) => sum + c.price, 0);
@@ -113,7 +128,6 @@ const BarbellAdmin = () => {
   );
   const appointmentsCount = thisMonthAppointments.length;
 
-
   // Monthly stats for charts
   const monthlyStats = Array.from({ length: 12 }, (_, i) => {
     const monthlyCust = cust.filter((c) => {
@@ -125,68 +139,92 @@ const BarbellAdmin = () => {
     return { month: monthNames[i], sales, appointments };
   });
 
-  const totalRevenue = monthlyStats.reduce((sum, m) => sum + m.sales, 0);
-  const totalAppointments = monthlyStats.reduce(
-    (sum, m) => sum + m.appointments,
-    0
-  );
   const totalAppointmentsAllTime = cust.length;
-      console.log(totalAppointmentsAllTime)
+  //console.log(totalAppointmentsAllTime);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+const filteredCustomers = cust.filter((customer) =>
+  customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  customer.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  customer.phone_number.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
 
   // Calendar functions
   const generateCalendarDays = () => {
-    const year = currentYear;
-    const month = currentMonthIndex;
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startDay = firstDay.getDay();
+    const year = currentYear; // Get the current year
+    const month = currentMonthIndex; // (0-11), 8-September
+
+    const firstDay = new Date(year, month, 1); // 1st of month
+    const lastDay = new Date(year, month + 1, 0); // last day of month
+    const daysInMonth = lastDay.getDate(); // number of days in a month
+    const startDay = firstDay.getDay(); // weekdays of the 1st (sun = 0, mon = 1, ... sat =6)
+    //console.log("Start Day", startDay ) // output: 1 sebab september 1st is monday
 
     const days: (null | {
       day: number;
       dateStr: string;
       isAvailable: boolean;
-    })[] = [];
+    })[] = []; // empty arraylist
 
+    // fill empty slots so thta the calendar align properly
     for (let i = 0; i < startDay; i++) days.push(null);
 
+    //loop over every days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
         day
       ).padStart(2, "0")}`;
+      //console.log(dateStr) // 2025-09-24, format date
+
+      // check from DB state "date"
+      const dbEntry = date.find((d) => d.dateStr === dateStr); // match the database data to the array
+
       days.push({
         day,
         dateStr,
-        isAvailable: availableDates.includes(dateStr),
+        isAvailable: dbEntry ? dbEntry.isOpen : false, // default closed
       });
     }
 
     return days;
   };
 
-  const toggleDateAvailability = (dateStr: string) => {
+  const toggleDateAvailability = async (dateStr: string) => {
     const todayMidnight = new Date().setHours(0, 0, 0, 0);
-    const selectedDate = new Date(dateStr);
-    if (selectedDate.getTime() < todayMidnight) return;
+    const selectedDate = new Date(dateStr).toISOString().split("T")[0];
 
-    setSelectedDateToToggle(dateStr);
+    setSelectedDateToToggle(selectedDate); // store selected date
 
-    if (availableDates.includes(dateStr)) {
-      setAvailableDates(availableDates.filter((d) => d !== dateStr));
-    } else {
-      setAvailableDates([...availableDates, dateStr].sort());
-    }
+    console.log("Selected date:", selectedDate);
+
+    try {
+      const response = await fetch("/api/toggleDate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ dateStr: selectedDate }),
+      });
+    } catch {}
   };
 
-  const handleConfirm = () => {
-    console.log("Available Dates:");
-    console.log(availableDates);
+  const handleConfirm = async () => {
+    window.location.reload();
   };
 
-  const handleCloseAll = () => setAvailableDates([]);
 
   const handleUpdate = (c: Customer) => {
     // For future use
+  };
+
+    const toggleSelect = (dateStr: string) => {
+    setSelectedDates((prev) =>
+      prev.includes(dateStr)
+        ? prev.filter((d) => d !== dateStr) // unselect if already selected
+        : [...prev, dateStr] // add if not selected
+    );
   };
 
   return (
@@ -363,46 +401,49 @@ const BarbellAdmin = () => {
                     const isPast =
                       new Date(dateStr).getTime() <
                       new Date().setHours(0, 0, 0, 0);
+
+                      const isSelected = selectedDates.includes(dateStr);
+
                     return (
                       <button
                         key={index}
-                        onClick={() =>
-                          !isPast && toggleDateAvailability(dateStr)
-                        }
+                        onClick={() => {
+                          if (!isPast) {
+                            toggleDateAvailability(dateStr);
+                            toggleSelect(dateStr);
+                          }
+                        }}
                         disabled={isPast}
-                        className={`h-10 rounded-lg font-medium transition-all duration-300 text-sm ${
-                          isPast
-                            ? "text-gray-600 cursor-not-allowed"
-                            : "cursor-pointer hover:scale-105"
-                        } ${
-                          isAvailable && !isPast
-                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                            : !isPast
-                            ? "bg-gray-600/20 text-gray-400 hover:bg-gray-600/30"
-                            : "bg-gray-800/20 text-gray-600"
-                        }`}
+                        className={`h-10 rounded-lg font-medium transition-all duration-300 text-sm
+                      ${
+                        isPast
+                          ? "text-gray-600 cursor-not-allowed bg-gray-800/20"
+                          : isSelected
+                          ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                          : isAvailable
+                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                          : "bg-gray-600/20 text-gray-400 hover:bg-gray-600/30 cursor-pointer hover:scale-105"
+                      }`}
                       >
-                        {day}{" "}
-                        {isAvailable && !isPast && (
+                        {day}
+                        {isAvailable && !isPast && !isSelected && (
                           <Check className="w-3 h-3 mx-auto mt-0.5" />
+                        )}
+                        {isAvailable && !isPast && isSelected && (
+                          <X className="w-3 h-3 mx-auto mt-0.5" />
                         )}
                       </button>
                     );
                   })}
                 </div>
               </div>
+
               <div className="space-y-3">
                 <button
                   className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-400 py-3 rounded-xl font-medium transition-all duration-300 border border-green-500/30"
                   onClick={handleConfirm}
                 >
                   Confirm
-                </button>
-                <button
-                  className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 rounded-xl font-medium transition-all duration-300 border border-red-500/30"
-                  onClick={handleCloseAll}
-                >
-                  Close All Days
                 </button>
               </div>
             </div>
@@ -502,65 +543,80 @@ const BarbellAdmin = () => {
         </div>
       </div>
 
-      {showAllAppointments && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-2xl w-full max-w-4xl p-6 relative">
-            <button
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
-              onClick={() => setShowAllAppointments(false)}
+     {showAllAppointments && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div className="bg-gray-900 rounded-2xl w-full max-w-4xl p-6 relative">
+      <button
+        className="absolute top-4 right-4 text-gray-400 hover:text-white"
+        onClick={() => setShowAllAppointments(false)}
+      >
+        <X className="w-6 h-6" />
+      </button>
+
+      <h2 className="text-2xl font-bold text-white mb-4">
+        All Appointments
+      </h2>
+
+      {/* 🔍 Search Bar */}
+      <input
+        type="text"
+        placeholder="Search by name, service, or phone..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full mb-4 p-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+      />
+
+      {/* Filtered Appointments */}
+      <div className="max-h-[70vh] overflow-y-auto space-y-4">
+        {filteredCustomers.length > 0 ? (
+          filteredCustomers.map((customer) => (
+            <div
+              key={customer._id}
+              className="bg-white/5 border border-white/10 rounded-xl p-4"
             >
-              <X className="w-6 h-6" />
-            </button>
-
-            <h2 className="text-2xl font-bold text-white mb-4">
-              All Appointments
-            </h2>
-
-            <div className="max-h-[70vh] overflow-y-auto space-y-4">
-              {cust.map((customer) => (
+              <div className="flex justify-between items-center">
+                <h4 className="text-white font-semibold">
+                  {customer.name}
+                </h4>
+              </div>
+              <div className="flex justify-between mt-2 text-sm">
                 <div
-                  key={customer._id}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4"
+                  className={`${
+                    {
+                      Haircut: "text-yellow-400",
+                      "Beard-trim": "text-green-400",
+                      "Hair-colour": "text-purple-400",
+                    }[customer.service] || "text-gray-400"
+                  }`}
                 >
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-white font-semibold">
-                      {customer.name}
-                    </h4>
-                  </div>
-                  <div className="flex justify-between mt-2 text-sm">
-                    <div
-                      className={`${
-                        {
-                          Haircut: "text-yellow-400",
-                          "Beard-trim": "text-green-400",
-                          "Hair-colour": "text-purple-400",
-                        }[customer.service] || "text-gray-400"
-                      }`}
-                    >
-                      <p>{customer.service}</p>
-                      <p className="flex items-center gap-1 mt-1">
-                        <Clock className="w-3 h-3" />
-                        {customer.date_book} • {customer.time_book}
-                      </p>
-                    </div>
-                    <p className="text-right text-white font-medium">
-                      RM {customer.price}
-                    </p>
-                  </div>
-                  {customer.remarks && (
-                    <p className="text-gray-300 text-sm mt-1">
-                      Request: {customer.remarks}
-                    </p>
-                  )}
-                  <p className="text-gray-400 text-sm mt-1">
-                    Phone: {customer.phone_number}
+                  <p>{customer.service}</p>
+                  <p className="flex items-center gap-1 mt-1">
+                    <Clock className="w-3 h-3" />
+                    {customer.date_book} • {customer.time_book}
                   </p>
                 </div>
-              ))}
+                <p className="text-right text-white font-medium">
+                  RM {customer.price}
+                </p>
+              </div>
+              {customer.remarks && (
+                <p className="text-gray-300 text-sm mt-1">
+                  Request: {customer.remarks}
+                </p>
+              )}
+              <p className="text-gray-400 text-sm mt-1">
+                Phone: {customer.phone_number}
+              </p>
             </div>
-          </div>
-        </div>
-      )}
+          ))
+        ) : (
+          <p className="text-gray-400 text-center">No results found</p>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
