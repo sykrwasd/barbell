@@ -414,7 +414,7 @@ const BarbellAdmin = () => {
               </h3>
 
               <div className="w-full h-64">
-                <ResponsiveContainer width="100%" height="170%">
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={monthlyStats}
                     margin={{ top: 10, right: 20, left: -10, bottom: 10 }}
