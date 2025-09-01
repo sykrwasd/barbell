@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, Clock, User, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Swal from "sweetalert2";
+
+type AvailableDate = {
+  _id: string;
+  dateStr: string;
+  isOpen: boolean;
+};
 
 const BarbellLanding = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -13,6 +19,28 @@ const BarbellLanding = () => {
   const [phone, setPhone] = useState("");
   const [remark, setRemark] = useState("");
   const [service, setService] = useState("");
+  const [date, setDate] = useState<AvailableDate[]>([]);
+
+  useEffect(() => {
+    fetchDate();
+  }, []);
+
+  async function fetchDate() {
+    try {
+      const res = await fetch("/api/getDate");
+      const data = await res.json();
+
+      const formatted = data.map((d: any) => ({
+        dateStr: new Date(d.date).toISOString().split("T")[0],
+        isOpen: d.isOpen,
+      }));
+
+      setDate(formatted);
+      console.log(formatted);
+    } catch (e) {
+      console.error("Error fetching items:", e);
+    }
+  }
 
   const handleBook = async (e: React.FormEvent) => {
     e.preventDefault(); // prevent page reload if inside a <form>
@@ -64,23 +92,45 @@ const BarbellLanding = () => {
   };
 
   const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
+  const currentMonthIndex = now.getMonth();
+
   // Generate calendar days for current month
+  // Calendar functions
   const generateCalendar = () => {
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startDay = firstDay.getDay();
+    const year = currentYear; // Get the current year
+    const month = currentMonthIndex; // (0-11), 8-September
 
-    const days = [];
+    const firstDay = new Date(year, month, 1); // 1st of month
+    const lastDay = new Date(year, month + 1, 0); // last day of month
+    const daysInMonth = lastDay.getDate(); // number of days in a month
+    const startDay = firstDay.getDay(); // weekdays of the 1st (sun = 0, mon = 1, ... sat =6)
+    //console.log("Start Day", startDay ) // output: 1 sebab september 1st is monday
 
-    for (let i = 0; i < startDay; i++) {
-      days.push(null);
-    }
+    const days: (null | {
+      day: number;
+      dateStr: string;
+      isAvailable: boolean;
+    })[] = []; // empty arraylist
 
+    // fill empty slots so thta the calendar align properly
+    for (let i = 0; i < startDay; i++) days.push(null);
+
+    //loop over every days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      days.push(day);
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
+        day
+      ).padStart(2, "0")}`;
+      //console.log(dateStr) // 2025-09-24, format date
+
+      // check from DB state "date"
+      const dbEntry = date.find((d) => d.dateStr === dateStr); // match the database data to the array
+
+      days.push({
+        day,
+        dateStr,
+        isAvailable: dbEntry ? dbEntry.isOpen : false, // default closed
+      });
     }
 
     return days;
@@ -202,31 +252,32 @@ const BarbellLanding = () => {
                   {generateCalendar().map((day, index) => {
                     if (!day) return <div key={index} className="invisible" />;
 
-                    const buttonDate = new Date(
-                      currentYear,
-                      now.getMonth(),
-                      day
-                    );
-                    const isPast = buttonDate < new Date(); // disable past dates
+                    const dbEntry = date.find((d) => d.dateStr === day.dateStr);
+                    const isAvailable = dbEntry ? dbEntry.isOpen : false;
+                    const isPast = new Date(day.dateStr) < new Date(todayStr); // only date comparison
                     const isSelected =
-                      selectedDate?.getTime() === buttonDate.getTime();
+                      selectedDate?.toISOString().split("T")[0] === day.dateStr;
 
                     return (
                       <button
                         key={index}
-                        onClick={() => !isPast && setSelectedDate(buttonDate)}
-                        disabled={isPast}
+                        onClick={() =>
+                          isAvailable &&
+                          !isPast &&
+                          setSelectedDate(new Date(day.dateStr))
+                        }
+                        disabled={!isAvailable || isPast}
                         className={`
-        h-12 rounded-lg font-medium transition-all duration-300
-        ${
-          isPast
-            ? "text-gray-600 cursor-not-allowed"
-            : "text-white hover:bg-white/20 cursor-pointer"
-        }
-        ${isSelected ? "bg-gray-500 text-black font-bold" : ""}
-      `}
-                      >
-                        {day}
+                        h-12 rounded-lg font-medium transition-all duration-300
+                        ${
+                          !isAvailable || isPast
+                            ? "text-white cursor-not-allowed"
+                            : "text-gray-500 hover:bg-green-400 cursor-pointer bg-green-300"
+                        }
+                        ${isSelected ? "bg-gray-500 text-black font-bold" : ""}
+                      `}
+                      > 
+                        {day.day}
                       </button>
                     );
                   })}

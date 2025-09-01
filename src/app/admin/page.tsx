@@ -26,6 +26,8 @@ import {
 } from "recharts";
 
 import { DataTableComponent } from "datatables.net-react";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 type Customer = {
   _id: string;
@@ -45,14 +47,25 @@ type Date = {
 };
 
 const BarbellAdmin = () => {
+  const router = useRouter();
   const [cust, setCustomer] = useState<Customer[]>([]);
   const [showAllAppointments, setShowAllAppointments] = useState(false);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  
+  const [selectedDateToToggle, setSelectedDateToToggle] = useState<
+   string | null
+  >(null);
   const [isSelected, setIsSelected] = useState(false);
   const [date, setDate] = useState<Date[]>([]);
+  const [password, setPassword] = useState("");
+
 
   useEffect(() => {
     fetchCustomer();
     fetchDate();
+     (
+      document.getElementById("passwordModal") as HTMLDialogElement
+    )?.showModal();
   }, []);
 
   async function fetchCustomer() {
@@ -84,11 +97,6 @@ const BarbellAdmin = () => {
     }
   }
 
-   const [selectedDates, setSelectedDates] = useState<string[]>([]);
-
-  const [selectedDateToToggle, setSelectedDateToToggle] = useState<
-    string | null
-  >(null);
 
   const monthNames = [
     "January",
@@ -149,6 +157,42 @@ const filteredCustomers = cust.filter((customer) =>
   customer.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
   customer.phone_number.toLowerCase().includes(searchQuery.toLowerCase())
 );
+
+  const handlePassword = async () => {
+    try {
+      const res = await fetch(`/api/checkPassword`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      if (!res.ok) {
+        (
+          document.getElementById("passwordModal") as HTMLDialogElement
+        )?.close();
+
+        Swal.fire({
+          title: "Wrong Password, Redirecting..",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+        setTimeout(() => {
+          router.push("/");
+        }, 500);
+      } else {
+        (
+          document.getElementById("passwordModal") as HTMLDialogElement
+        )?.close();
+        Swal.fire({
+          title: "Admin Verified",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
 
   // Calendar functions
@@ -616,6 +660,37 @@ const filteredCustomers = cust.filter((customer) =>
     </div>
   </div>
 )}
+
+    <dialog id="passwordModal" className="modal backdrop-blur-sm">
+        <div className="modal-box bg-white ">
+          <h3 className="font-bold text-lg text-black">
+            Password are required to proceed.
+          </h3>
+
+          {/* Form Content */}
+          <div className="mt-4">
+            <label className="block text-sm font-bold text-gray-700 font-['Poppins',sans-serif] uppercase tracking-wide mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm font-['Inter',sans-serif] text-gray-800 placeholder-gray-500"
+              placeholder="Enter Password"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <div className="modal-action flex gap-3">
+              <button
+                type="button"
+                className="btn btn-primary rounded-lg"
+                onClick={handlePassword}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      </dialog>
 
     </div>
   );
