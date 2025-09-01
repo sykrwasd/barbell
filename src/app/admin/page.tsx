@@ -661,7 +661,7 @@ const filteredCustomers = cust.filter((customer) =>
   </div>
 )}
 
-    <dialog id="passwordModal" className="modal backdrop-blur-sm">
+    <dialog id="passwordModal" className="modal backdrop-brightness-0">
         <div className="modal-box bg-white ">
           <h3 className="font-bold text-lg text-black">
             Password are required to proceed.
