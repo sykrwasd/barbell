@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { Calendar, Clock, User, Menu, X } from "lucide-react";
 import Image from "next/image";
+import Swal from "sweetalert2";
 
 const BarbellLanding = () => {
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [name, setName] = useState("");
@@ -13,22 +14,58 @@ const BarbellLanding = () => {
   const [remark, setRemark] = useState("");
   const [service, setService] = useState("");
 
-  const handleBook = (e: React.FormEvent) => {
+  const handleBook = async (e: React.FormEvent) => {
     e.preventDefault(); // prevent page reload if inside a <form>
 
-    alert(
-      `Name: ${name}\nPhone: ${phone}\nService: ${service}\nRemark: ${remark}`
-    );
+    const formattedDate = selectedDate?.toISOString().split("T")[0];
 
-    setName("");
-    setPhone("");
-    setRemark("");
-    setService("");
+    if (!name || !phone || !service) {
+      return alert("Please complete the form");
+    }
+
+    // alert(
+    //   `Name: ${name}\nPhone: ${phone}\nService: ${service}\nRemark: ${remark}\nSelected Time:${selectedTime}\nSelected Date: ${formattedDate}`
+    // );
+    try {
+      const response = await fetch("/api/addBook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          phone_number: phone,
+          service,
+          remarks: remark,
+          date_book: formattedDate,
+          time_book: selectedTime,
+        }),
+      });
+
+      if (response.ok) {
+        console.log("Book added successfully");
+        Swal.fire({
+          title: "Book Added Successfully!",
+          icon: "success",
+        });
+      } else {
+        console.error("Failed to add book");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setName("");
+      setPhone("");
+      setRemark("");
+      setService("");
+      setSelectedDate(null);
+      setSelectedTime("");
+    }
   };
 
+  const now = new Date();
   // Generate calendar days for current month
   const generateCalendar = () => {
-    const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -112,8 +149,6 @@ const BarbellLanding = () => {
                 BARBELL
               </h1>
             </div>
-
-    
           </div>
         </div>
 
@@ -164,29 +199,37 @@ const BarbellLanding = () => {
                 </div>
 
                 <div className="grid grid-cols-7 gap-2">
-                  {generateCalendar().map((day, index) => (
-                    <button
-                      key={index}
-                      onClick={() => day && setSelectedDate(day)}
-                      disabled={!day || day < new Date().getDate()}
-                      className={`
-                        h-12 rounded-lg font-medium transition-all duration-300
-                        ${!day ? "invisible" : ""}
-                        ${
-                          day && day < new Date().getDate()
-                            ? "text-gray-600 cursor-not-allowed"
-                            : "text-white hover:bg-white/20 cursor-pointer"
-                        }
-                        ${
-                          selectedDate === day
-                            ? "bg-gray-500 text-black font-bold"
-                            : "hover:bg-white/10"
-                        }
-                      `}
-                    >
-                      {day}
-                    </button>
-                  ))}
+                  {generateCalendar().map((day, index) => {
+                    if (!day) return <div key={index} className="invisible" />;
+
+                    const buttonDate = new Date(
+                      currentYear,
+                      now.getMonth(),
+                      day
+                    );
+                    const isPast = buttonDate < new Date(); // disable past dates
+                    const isSelected =
+                      selectedDate?.getTime() === buttonDate.getTime();
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => !isPast && setSelectedDate(buttonDate)}
+                        disabled={isPast}
+                        className={`
+        h-12 rounded-lg font-medium transition-all duration-300
+        ${
+          isPast
+            ? "text-gray-600 cursor-not-allowed"
+            : "text-white hover:bg-white/20 cursor-pointer"
+        }
+        ${isSelected ? "bg-gray-500 text-black font-bold" : ""}
+      `}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -235,8 +278,8 @@ const BarbellLanding = () => {
                         Booking Summary
                       </h4>
                       <p className="text-gray-300">
-                        {currentMonth} {selectedDate}, {currentYear} at{" "}
-                        {selectedTime}
+                        {currentMonth} {selectedDate.toDateString()},{" "}
+                        {currentYear} at {selectedTime}
                       </p>
                     </div>
                     <User className="w-8 h-8 text-gray-400" />
@@ -281,9 +324,9 @@ const BarbellLanding = () => {
                         onChange={(e) => setService(e.target.value)}
                       >
                         <option value="">Select a service</option>
-                        <option value="haircut">Haircut - RM20</option>
-                        <option value="beard-trim">Beard Trim - RM0-RM5</option>
-                        <option value="hair-colour">Hair Colour - RM30</option>
+                        <option value="Haircut">Haircut - RM20</option>
+                        <option value="Beard-trim">Beard Trim - RM0-RM5</option>
+                        <option value="Hair-colour">Hair Colour - RM30</option>
                       </select>
                     </div>
 
@@ -297,9 +340,6 @@ const BarbellLanding = () => {
                         placeholder="Any special requests..."
                         onChange={(e) => setRemark(e.target.value)}
                       ></textarea>
-
-                
-
                     </div>
                   </form>
 
@@ -309,8 +349,6 @@ const BarbellLanding = () => {
                   >
                     Book Appointment
                   </button>
-
-                 
                 </div>
               </div>
             )}
@@ -326,9 +364,9 @@ const BarbellLanding = () => {
           </h3>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: "Haircut", price: "RM20", duration: "30 min" },
-              { name: "Beard Trim", price: "RM0 – RM5", duration: "20 min" },
-              { name: "Hair Colour", price: "RM30", duration: "45 min" },
+              { name: "Haircut", price: "RM20", duration: "30 mins" },
+              { name: "Beard Trim", price: "RM0 – RM5", duration: "20 mins" },
+              { name: "Hair Colour", price: "RM30", duration: "2 hours" },
             ].map((service, index) => (
               <div
                 key={index}
@@ -374,10 +412,6 @@ const BarbellLanding = () => {
           </p>
         </div>
       </footer>
-
-        
-      
-
     </div>
   );
 };
