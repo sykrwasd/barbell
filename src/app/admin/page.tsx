@@ -214,7 +214,7 @@ const BarbellAdmin = () => {
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Today's Revenue</p>
+                  <p className="text-gray-400 text-sm">Today&apos;s Revenue</p>
                   <p className="text-2xl font-bold text-white">
                     RM {todaysRevenue}
                   </p>
