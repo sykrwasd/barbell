@@ -254,14 +254,8 @@ const filteredCustomers = cust.filter((customer) =>
     } catch {}
   };
 
-  const handleConfirm = () => {
-  setDate((prev) =>
-    prev.map((d) =>
-      selectedDates.includes(d.dateStr)
-        ? { ...d, isOpen: !d.isOpen }
-        : d
-    )
-  );
+  const handleConfirm = async () => {
+  await fetchDate();
   setSelectedDates([]); // clear selections
 };
 
