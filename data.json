@@ -1,17 +1,62 @@
 [
-  { "date": "2025-09-01", "isOpen": true },
-  { "date": "2025-09-02", "isOpen": false },
-  { "date": "2025-09-03", "isOpen": true },
-  { "date": "2025-09-04", "isOpen": true },
-  { "date": "2025-09-05", "isOpen": false },
-  { "date": "2025-09-06", "isOpen": true },
-  { "date": "2025-09-07", "isOpen": true },
-  { "date": "2025-09-08", "isOpen": false },
-  { "date": "2025-09-09", "isOpen": true },
-  { "date": "2025-09-10", "isOpen": true },
-  { "date": "2025-09-11", "isOpen": false },
-  { "date": "2025-09-12", "isOpen": true },
-  { "date": "2025-09-13", "isOpen": true },
-  { "date": "2025-09-14", "isOpen": false },
-  { "date": "2025-09-15", "isOpen": true }
+  {
+    "name": "Ali Rahman",
+    "phone_number": "0123456789",
+    "service": "Haircut",
+    "remarks": "Wants a short fade cut",
+    "date_book": "2025-09-05",
+    "time_book": "10:00 AM",
+    "price": 25,
+    "status": "pending"
+  },
+  {
+    "name": "Siti Aminah",
+    "phone_number": "0198765432",
+    "service": "Facial",
+    "remarks": "Sensitive skin",
+    "date_book": "2025-09-05",
+    "time_book": "11:30 AM",
+    "price": 50,
+    "status": "completed"
+  },
+  {
+    "name": "John Tan",
+    "phone_number": "0172233445",
+    "service": "Massage",
+    "remarks": "Back pain",
+    "date_book": "2025-09-06",
+    "time_book": "2:00 PM",
+    "price": 70,
+    "status": "pending"
+  },
+  {
+    "name": "Nur Izzah",
+    "phone_number": "0139988776",
+    "service": "Hair Coloring",
+    "remarks": "Dark brown shade",
+    "date_book": "2025-09-06",
+    "time_book": "3:15 PM",
+    "price": 120,
+    "status": "cancelled"
+  },
+  {
+    "name": "Michael Lee",
+    "phone_number": "0112233445",
+    "service": "Manicure",
+    "remarks": "French tips style",
+    "date_book": "2025-09-07",
+    "time_book": "12:00 PM",
+    "price": 45,
+    "status": "pending"
+  },
+  {
+    "name": "Farah Nadia",
+    "phone_number": "0145678910",
+    "service": "Pedicure",
+    "remarks": "",
+    "date_book": "2025-09-07",
+    "time_book": "1:30 PM",
+    "price": 55,
+    "status": "completed"
+  }
 ]

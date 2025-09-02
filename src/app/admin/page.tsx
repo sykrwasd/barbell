@@ -28,6 +28,7 @@ import {
 import { DataTableComponent } from "datatables.net-react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import customer from "../../../models/customer";
 
 type Customer = {
   _id: string;
@@ -38,6 +39,7 @@ type Customer = {
   date_book: string;
   time_book: string;
   price: number;
+  status: string;
 };
 
 type Date = {
@@ -51,19 +53,18 @@ const BarbellAdmin = () => {
   const [cust, setCustomer] = useState<Customer[]>([]);
   const [showAllAppointments, setShowAllAppointments] = useState(false);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  
+
   const [selectedDateToToggle, setSelectedDateToToggle] = useState<
-   string | null
+    string | null
   >(null);
   const [isSelected, setIsSelected] = useState(false);
   const [date, setDate] = useState<Date[]>([]);
   const [password, setPassword] = useState("");
 
-
   useEffect(() => {
     fetchCustomer();
     fetchDate();
-     (
+    (
       document.getElementById("passwordModal") as HTMLDialogElement
     )?.showModal();
   }, []);
@@ -97,7 +98,6 @@ const BarbellAdmin = () => {
     }
   }
 
-
   const monthNames = [
     "January",
     "February",
@@ -119,11 +119,15 @@ const BarbellAdmin = () => {
   const currentYear = now.getFullYear();
   const currentMonth = monthNames[currentMonthIndex];
 
-  // Stats
-  const todaysAppointments = cust.filter((c) => c.date_book === todayStr);
+  const completedCust = cust.filter((c) => c.status === "completed");
+
+  const todaysAppointments = completedCust.filter(
+    (c) => c.date_book === todayStr
+  );
   const todaysRevenue = todaysAppointments.reduce((sum, c) => sum + c.price, 0);
 
-  const thisMonthAppointments = cust.filter((c) => {
+  // ✅ This month's completed appointments
+  const thisMonthAppointments = completedCust.filter((c) => {
     const date = new Date(c.date_book);
     return (
       date.getMonth() === currentMonthIndex &&
@@ -136,9 +140,8 @@ const BarbellAdmin = () => {
   );
   const appointmentsCount = thisMonthAppointments.length;
 
-  // Monthly stats for charts
   const monthlyStats = Array.from({ length: 12 }, (_, i) => {
-    const monthlyCust = cust.filter((c) => {
+    const monthlyCust = completedCust.filter((c) => {
       const date = new Date(c.date_book);
       return date.getMonth() === i && date.getFullYear() === currentYear;
     });
@@ -147,16 +150,18 @@ const BarbellAdmin = () => {
     return { month: monthNames[i], sales, appointments };
   });
 
-  const totalAppointmentsAllTime = cust.length;
+  const totalAppointmentsAllTime = completedCust.length;
+
   //console.log(totalAppointmentsAllTime);
 
   const [searchQuery, setSearchQuery] = useState("");
 
-const filteredCustomers = cust.filter((customer) =>
-  customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  customer.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  customer.phone_number.toLowerCase().includes(searchQuery.toLowerCase())
-);
+  const filteredCustomers = cust.filter(
+    (customer) =>
+      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customer.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customer.phone_number.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handlePassword = async () => {
     try {
@@ -193,7 +198,6 @@ const filteredCustomers = cust.filter((customer) =>
       console.error(e);
     }
   };
-
 
   // Calendar functions
   const generateCalendarDays = () => {
@@ -255,20 +259,34 @@ const filteredCustomers = cust.filter((customer) =>
   };
 
   const handleConfirm = async () => {
-  await fetchDate();
-  setSelectedDates([]); // clear selections
-};
-
-
-  const handleUpdate = (c: Customer) => {
-    // For future use
+    await fetchDate();
+    setSelectedDates([]); // clear selections
   };
 
-    const toggleSelect = (dateStr: string) => {
-    setSelectedDates((prev) =>
-      prev.includes(dateStr)
-        ? prev.filter((d) => d !== dateStr) // unselect if already selected
-        : [...prev, dateStr] // add if not selected
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      await fetch("/api/updateCust", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+
+      console.log(id, newStatus);
+
+      setCustomer((prev) =>
+        prev.map((c) => (c._id === id ? { ...c, status: newStatus } : c))
+      );
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    }
+  };
+
+  const toggleSelect = (dateStr: string) => {
+    setSelectedDates(
+      (prev) =>
+        prev.includes(dateStr)
+          ? prev.filter((d) => d !== dateStr) // unselect if already selected
+          : [...prev, dateStr] // add if not selected
     );
   };
 
@@ -349,56 +367,81 @@ const filteredCustomers = cust.filter((customer) =>
                 <Calendar className="w-6 h-6" /> Upcoming Cuts
               </h3>
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {cust.map((customer) => (
-                  <button
-                    key={customer._id}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all duration-300"
-                    onClick={() => handleUpdate(customer)}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-white">
-                        {customer.name}
-                      </h4>
-                    </div>
-                    <div className="flex items-center justify-between text-sm mb-2">
-                      <div
-                        className={`text-left text-sm font-medium mt-1 ${
-                          {
-                            Haircut: "text-yellow-400",
-                            "Beard-trim": "text-green-400",
-                            "Hair-colour": "text-purple-400",
-                          }[customer.service] || "text-gray-400"
-                        }`}
-                      >
-                        <p>{customer.service}</p>
-                        <p className="flex items-center gap-1 mt-1">
-                          <Clock className="w-3 h-3" /> {customer.date_book} •{" "}
-                          {customer.time_book}
+                {cust
+                  .filter((c) => c.status === "pending")
+                  .map((customer) => (
+                    <button
+                      key={customer._id}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-white">
+                          {customer.name}
+                        </h4>
+
+                        {/* 🔹 Status Badge / Dropdown */}
+                        <select
+                          value={customer.status}
+                          onChange={(e) =>
+                            handleStatusChange(customer._id, e.target.value)
+                          }
+                          className={`px-2 py-1 rounded-md text-sm font-medium border focus:outline-none ${
+                            customer.status === "pending"
+                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                              : customer.status === "Confirmed"
+                              ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                              : customer.status === "Completed"
+                              ? "bg-green-500/20 text-green-400 border-green-500/30"
+                              : "bg-red-500/20 text-red-400 border-red-500/30"
+                          }`}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="completed">Completed</option>
+                          <option value="canceled">Canceled</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <div
+                          className={`text-left text-sm font-medium mt-1 ${
+                            {
+                              Haircut: "text-yellow-400",
+                              "Beard-trim": "text-green-400",
+                              "Hair-colour": "text-purple-400",
+                            }[customer.service] || "text-gray-400"
+                          }`}
+                        >
+                          <p>{customer.service}</p>
+                          <p className="flex items-center gap-1 mt-1">
+                            <Clock className="w-3 h-3" /> {customer.date_book} •{" "}
+                            {customer.time_book}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="px-3 py-1 rounded-full text-sm font-medium">
+                            RM {customer.price}
+                          </p>
+                        </div>
+                      </div>
+
+                      {customer.remarks && (
+                        <div className="text-left mt-1">
+                          <p className="text-white text-sm font-semibold">
+                            Request:
+                          </p>
+                          <p className="text-gray-300 text-sm mt-1">
+                            {customer.remarks}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="text-right mt-2">
+                        <p className="text-gray-400 text-sm">
+                          Phone: {customer.phone_number}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="px-3 py-1 rounded-full text-sm font-medium">
-                          RM {customer.price}
-                        </p>
-                      </div>
-                    </div>
-                    {customer.remarks && (
-                      <div className="text-left mt-1">
-                        <p className="text-white text-sm font-semibold">
-                          Request:
-                        </p>
-                        <p className="text-gray-300 text-sm mt-1">
-                          {customer.remarks}
-                        </p>
-                      </div>
-                    )}
-                    <div className="text-right mt-2">
-                      <p className="text-gray-400 text-sm">
-                        Phone: {customer.phone_number}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
               </div>
               <button
                 className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-medium transition-all duration-300"
@@ -447,7 +490,7 @@ const filteredCustomers = cust.filter((customer) =>
                       new Date(dateStr).getTime() <
                       new Date().setHours(0, 0, 0, 0);
 
-                      const isSelected = selectedDates.includes(dateStr);
+                    const isSelected = selectedDates.includes(dateStr);
 
                     return (
                       <button
@@ -588,81 +631,100 @@ const filteredCustomers = cust.filter((customer) =>
         </div>
       </div>
 
-     {showAllAppointments && (
-  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-    <div className="bg-gray-900 rounded-2xl w-full max-w-4xl p-6 relative">
-      <button
-        className="absolute top-4 right-4 text-gray-400 hover:text-white"
-        onClick={() => setShowAllAppointments(false)}
-      >
-        <X className="w-6 h-6" />
-      </button>
-
-      <h2 className="text-2xl font-bold text-white mb-4">
-        All Appointments
-      </h2>
-
-      {/* 🔍 Search Bar */}
-      <input
-        type="text"
-        placeholder="Search by name, service, or phone..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full mb-4 p-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-      />
-
-      {/* Filtered Appointments */}
-      <div className="max-h-[70vh] overflow-y-auto space-y-4">
-        {filteredCustomers.length > 0 ? (
-          filteredCustomers.map((customer) => (
-            <div
-              key={customer._id}
-              className="bg-white/5 border border-white/10 rounded-xl p-4"
+      {showAllAppointments && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-2xl w-full max-w-4xl p-6 relative">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              onClick={() => setShowAllAppointments(false)}
             >
-              <div className="flex justify-between items-center">
-                <h4 className="text-white font-semibold">
-                  {customer.name}
-                </h4>
-              </div>
-              <div className="flex justify-between mt-2 text-sm">
-                <div
-                  className={`${
-                    {
-                      Haircut: "text-yellow-400",
-                      "Beard-trim": "text-green-400",
-                      "Hair-colour": "text-purple-400",
-                    }[customer.service] || "text-gray-400"
-                  }`}
-                >
-                  <p>{customer.service}</p>
-                  <p className="flex items-center gap-1 mt-1">
-                    <Clock className="w-3 h-3" />
-                    {customer.date_book} • {customer.time_book}
-                  </p>
-                </div>
-                <p className="text-right text-white font-medium">
-                  RM {customer.price}
-                </p>
-              </div>
-              {customer.remarks && (
-                <p className="text-gray-300 text-sm mt-1">
-                  Request: {customer.remarks}
-                </p>
-              )}
-              <p className="text-gray-400 text-sm mt-1">
-                Phone: {customer.phone_number}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-400 text-center">No results found</p>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+              <X className="w-6 h-6" />
+            </button>
 
-    <dialog id="passwordModal" className="modal backdrop-brightness-0">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              All Appointments
+            </h2>
+
+            {/* 🔍 Search Bar */}
+            <input
+              type="text"
+              placeholder="Search by name, service, or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full mb-4 p-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            {/* Filtered Appointments */}
+            <div className="max-h-[70vh] overflow-y-auto space-y-4">
+              {filteredCustomers.length > 0 ? (
+                filteredCustomers.map((customer) => (
+                  <div
+                    key={customer._id}
+                    className="bg-white/5 border border-white/10 rounded-xl p-4"
+                  >
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-white font-semibold">
+                        {customer.name}
+                      </h4>
+                    </div>
+                    <div className="flex justify-between mt-2 text-sm">
+                      <div
+                        className={`${
+                          {
+                            Haircut: "text-yellow-400",
+                            "Beard-trim": "text-green-400",
+                            "Hair-colour": "text-purple-400",
+                          }[customer.service] || "text-gray-400"
+                        }`}
+                      >
+                        <p>{customer.service}</p>
+                        <p className="flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3" />
+                          {customer.date_book} • {customer.time_book}
+                        </p>
+                      </div>
+                      <p className="text-right text-white font-medium">
+                        RM {customer.price}
+                      </p>
+                    </div>
+                    {customer.remarks && (
+                      <p className="text-gray-300 text-sm mt-1">
+                        Request: {customer.remarks}
+                      </p>
+                    )}
+                    <p className="text-gray-400 text-sm mt-1 mb-2">
+                      Phone: {customer.phone_number}
+                    </p>
+                    <select
+                      value={customer.status}
+                      onChange={(e) =>
+                        handleStatusChange(customer._id, e.target.value)
+                      }
+                      className={`px-2 py-1 rounded-md text-sm font-medium border focus:outline-none ${
+                        customer.status === "pending"
+                          ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                          : customer.status === "confirmed"
+                          ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                          : customer.status === "completed"
+                          ? "bg-green-500/20 text-green-400 border-green-500/30"
+                          : "bg-red-500/20 text-red-400 border-red-500/30"
+                      }`}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="completed">Completed</option>
+                      <option value="canceled">Canceled</option>
+                    </select>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-center">No results found</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <dialog id="passwordModal" className="modal backdrop-brightness-0">
         <div className="modal-box bg-white ">
           <h3 className="font-bold text-lg text-black">
             Password are required to proceed.
@@ -692,7 +754,6 @@ const filteredCustomers = cust.filter((customer) =>
           </div>
         </div>
       </dialog>
-
     </div>
   );
 };

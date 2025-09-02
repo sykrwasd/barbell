@@ -5,6 +5,8 @@ import { Calendar, Clock, User, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Swal from "sweetalert2";
 
+
+
 type AvailableDate = {
   _id: string;
   dateStr: string;
@@ -19,7 +21,9 @@ const BarbellLanding = () => {
   const [phone, setPhone] = useState("");
   const [remark, setRemark] = useState("");
   const [service, setService] = useState("");
-  const [date, setDate] = useState<AvailableDate[]>([]);
+  const [date, setDate] = useState<AvailableDate[]>([]); // empty object array
+  const [customer, setCustomer] = useState<any | null>(null); //empty object
+  const [showReceipt, setShowReceipt] = useState(false)
 
   useEffect(() => {
     fetchDate();
@@ -51,6 +55,7 @@ const BarbellLanding = () => {
       return alert("Please complete the form");
     }
 
+
     // alert(
     //   `Name: ${name}\nPhone: ${phone}\nService: ${service}\nRemark: ${remark}\nSelected Time:${selectedTime}\nSelected Date: ${formattedDate}`
     // );
@@ -72,10 +77,21 @@ const BarbellLanding = () => {
 
       if (response.ok) {
         console.log("Book added successfully");
-        Swal.fire({
-          title: "Book Added Successfully!",
-          icon: "success",
-        });
+        const data = {
+          name,
+          phone_number: phone,
+          service,
+          remarks: remark,
+          date_book: formattedDate,
+          time_book: selectedTime,
+        };
+
+        setCustomer(data);
+        setShowReceipt(true)
+        // Swal.fire({
+        //   title: "Book Added Successfully!",
+        //   icon: "success",
+        // });
       } else {
         console.error("Failed to add book");
       }
@@ -276,7 +292,7 @@ const BarbellLanding = () => {
                         }
                         ${isSelected ? "bg-gray-500 text-black font-bold" : ""}
                       `}
-                      > 
+                      >
                         {day.day}
                       </button>
                     );
@@ -463,6 +479,55 @@ const BarbellLanding = () => {
           </p>
         </div>
       </footer>
+
+      {showReceipt && customer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative">
+            {/* Close button */}
+            <button
+              onClick={() => setShowReceipt(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-black"
+            >
+              ✕
+            </button>
+
+            {/* Receipt Content */}
+            <h2 className="text-2xl font-bold text-black   text-center mb-4">
+              💈 Booking Receipt
+            </h2>
+            <div className="space-y-3 text-gray-700">
+              <p>
+                <span className="font-semibold">Name:</span> {customer.name}
+              </p>
+              <p>
+                <span className="font-semibold">Phone:</span>{" "}
+                {customer.phone_number}
+              </p>
+              <p>
+                <span className="font-semibold">Service:</span>{" "}
+                {customer.service}
+              </p>
+              <p>
+                <span className="font-semibold">Remarks:</span>{" "}
+                {customer.remarks || "-"}
+              </p>
+              <p>
+                <span className="font-semibold">Date:</span> {customer.date_book}
+              </p>
+              <p>
+                <span className="font-semibold">Time:</span> {customer.time_book}
+              </p>
+            </div>
+
+            {/* Screenshot Hint */}
+            <div className="mt-6 text-center">
+              <p className="text-gray-500 text-sm">
+                📸 Screenshot this receipt as proof of booking
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
