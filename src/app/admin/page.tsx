@@ -24,7 +24,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-
+import CustomerCard from "@/components/Card";
 import { DataTableComponent } from "datatables.net-react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -40,6 +40,7 @@ type Customer = {
   time_book: string;
   price: number;
   status: string;
+  payment: string;
 };
 
 type Date = {
@@ -64,9 +65,7 @@ const BarbellAdmin = () => {
   useEffect(() => {
     fetchCustomer();
     fetchDate();
-    (
-      document.getElementById("passwordModal") as HTMLDialogElement
-    )?.showModal();
+    (document.getElementById("passwordModal") as HTMLDialogElement)?.showModal();
   }, []);
 
   async function fetchCustomer() {
@@ -273,9 +272,7 @@ const BarbellAdmin = () => {
 
       console.log(id, newStatus);
 
-      setCustomer((prev) =>
-        prev.map((c) => (c._id === id ? { ...c, status: newStatus } : c))
-      );
+     fetchCustomer()
     } catch (err) {
       console.error("Failed to update status:", err);
     }
@@ -370,77 +367,11 @@ const BarbellAdmin = () => {
                 {cust
                   .filter((c) => c.status === "pending")
                   .map((customer) => (
-                    <button
+                    <CustomerCard
                       key={customer._id}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all duration-300"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-white">
-                          {customer.name}
-                        </h4>
-
-                        {/* 🔹 Status Badge / Dropdown */}
-                        <select
-                          value={customer.status}
-                          onChange={(e) =>
-                            handleStatusChange(customer._id, e.target.value)
-                          }
-                          className={`px-2 py-1 rounded-md text-sm font-medium border focus:outline-none ${
-                            customer.status === "pending"
-                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                              : customer.status === "Confirmed"
-                              ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
-                              : customer.status === "Completed"
-                              ? "bg-green-500/20 text-green-400 border-green-500/30"
-                              : "bg-red-500/20 text-red-400 border-red-500/30"
-                          }`}
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="completed">Completed</option>
-                          <option value="canceled">Canceled</option>
-                        </select>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm mb-2">
-                        <div
-                          className={`text-left text-sm font-medium mt-1 ${
-                            {
-                              Haircut: "text-yellow-400",
-                              "Beard-trim": "text-green-400",
-                              "Hair-colour": "text-purple-400",
-                            }[customer.service] || "text-gray-400"
-                          }`}
-                        >
-                          <p>{customer.service}</p>
-                          <p className="flex items-center gap-1 mt-1">
-                            <Clock className="w-3 h-3" /> {customer.date_book} •{" "}
-                            {customer.time_book}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="px-3 py-1 rounded-full text-sm font-medium">
-                            RM {customer.price}
-                          </p>
-                        </div>
-                      </div>
-
-                      {customer.remarks && (
-                        <div className="text-left mt-1">
-                          <p className="text-white text-sm font-semibold">
-                            Request:
-                          </p>
-                          <p className="text-gray-300 text-sm mt-1">
-                            {customer.remarks}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="text-right mt-2">
-                        <p className="text-gray-400 text-sm">
-                          Phone: {customer.phone_number}
-                        </p>
-                      </div>
-                    </button>
+                      customer={customer}
+                      handleStatusChange={handleStatusChange}
+                    />
                   ))}
               </div>
               <button
@@ -695,6 +626,9 @@ const BarbellAdmin = () => {
                     <p className="text-gray-400 text-sm mt-1 mb-2">
                       Phone: {customer.phone_number}
                     </p>
+                    <p className="text-white text-sm mt-1 mb-2">
+                      Payment Method: {customer.payment}
+                    </p>
                     <select
                       value={customer.status}
                       onChange={(e) =>
@@ -714,6 +648,7 @@ const BarbellAdmin = () => {
                       <option value="completed">Completed</option>
                       <option value="canceled">Canceled</option>
                     </select>
+                    
                   </div>
                 ))
               ) : (

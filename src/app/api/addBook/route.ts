@@ -7,7 +7,7 @@ await connectToDatabase();
 
 export async function POST(req: Request) {
   try {
-    const { name, phone_number, service, remarks, date_book, time_book } =
+    const { name, phone_number, service, remarks, date_book, time_book, payment } =
       await req.json();
 
     const existingBooking = await Customer.findOne({
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
     console.log("req.body");
     console.log(
-      name + phone_number + service + remarks + date_book + time_book
+      name + phone_number + service + remarks + date_book + time_book + payment
     );
 
     const newCustomer = new Customer({
@@ -50,6 +50,7 @@ export async function POST(req: Request) {
       time_book: time_book,
       price: price,
       status: status,
+      payment: payment,
     });
 
     await newCustomer.save();
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
 
     const info = await transporter.sendMail({
       from: '"Barber Booking System" <umarsyakir16@gmail.com>', // change to your sender
-      to: "umarsyakir16@gmail.com", // barber’s email
+      to: "mdsybiliman@gmail.com", // barber’s email
       subject: "📅 New Booking Received",
       text: `New booking received!
 
@@ -105,6 +106,10 @@ Please be ready for the appointment.`,
          <tr>
           <td style="padding: 8px; border: 1px solid #ddd;"><strong>Remarks</strong></td>
           <td style="padding: 8px; border: 1px solid #ddd;">${remarks}</td>
+        </tr>
+         <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Payment Method</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${payment}</td>
         </tr>
       </table>
 

@@ -8,6 +8,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { id, status } = body;
+    console.log("id: ", id);
+    console.log("status: ", status);
 
     if (!id || !status) {
       return new Response(

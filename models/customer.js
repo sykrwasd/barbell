@@ -10,6 +10,7 @@
     time_book: { type: String, required: true }, // e.g. "10:00 AM"
     price: {type: Number, required: true},
     status: { type: String, required: true },
+    payment: { type: String, required: true },
 
   });
 

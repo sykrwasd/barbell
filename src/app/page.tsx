@@ -24,6 +24,7 @@ const BarbellLanding = () => {
   const [date, setDate] = useState<AvailableDate[]>([]); // empty object array
   const [customer, setCustomer] = useState<any | null>(null); //empty object
   const [showReceipt, setShowReceipt] = useState(false)
+  const [paymentMethod , setPaymentMethod] = useState("");
 
   useEffect(() => {
     fetchDate();
@@ -72,6 +73,7 @@ const BarbellLanding = () => {
           remarks: remark,
           date_book: formattedDate,
           time_book: selectedTime,
+          payment: paymentMethod
         }),
       });
 
@@ -84,6 +86,7 @@ const BarbellLanding = () => {
           remarks: remark,
           date_book: formattedDate,
           time_book: selectedTime,
+          payment : paymentMethod
         };
 
         setCustomer(data);
@@ -408,6 +411,20 @@ const BarbellLanding = () => {
                         onChange={(e) => setRemark(e.target.value)}
                       ></textarea>
                     </div>
+                    <div>
+                      <label className="block text-sm font-bold text-white uppercase tracking-wide mb-2">
+                       Payment Method
+                       </label>
+                      <select
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-800"
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                      >
+                        <option value="">Select a service</option>
+                        <option value="E-Wallet">E-Wallet</option>
+                        <option value="Cash">Cash</option>
+                      </select>
+                    </div>
                   </form>
 
                   <button
@@ -516,6 +533,9 @@ const BarbellLanding = () => {
               </p>
               <p>
                 <span className="font-semibold">Time:</span> {customer.time_book}
+              </p>
+              <p>
+                <span className="font-semibold">Payment Method:</span> {customer.payment}
               </p>
             </div>
 

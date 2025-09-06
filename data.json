@@ -1,62 +1,57 @@
 [
   {
-    "name": "Ali Rahman",
+    "name": "Ahmad Ali",
     "phone_number": "0123456789",
     "service": "Haircut",
-    "remarks": "Wants a short fade cut",
+    "remarks": "Please use scissors only",
     "date_book": "2025-09-05",
     "time_book": "10:00 AM",
-    "price": 25,
-    "status": "pending"
+    "price": 20,
+    "status": "Confirmed",
+    "payment": "Cash"
   },
   {
-    "name": "Siti Aminah",
-    "phone_number": "0198765432",
-    "service": "Facial",
-    "remarks": "Sensitive skin",
-    "date_book": "2025-09-05",
-    "time_book": "11:30 AM",
-    "price": 50,
-    "status": "completed"
-  },
-  {
-    "name": "John Tan",
-    "phone_number": "0172233445",
-    "service": "Massage",
-    "remarks": "Back pain",
+    "name": "Siti Nur",
+    "phone_number": "0138765432",
+    "service": "Hair Colour",
+    "remarks": "Use brown shade",
     "date_book": "2025-09-06",
     "time_book": "2:00 PM",
-    "price": 70,
-    "status": "pending"
+    "price": 30,
+    "status": "Pending",
+    "payment": "E-Wallet"
   },
   {
-    "name": "Nur Izzah",
-    "phone_number": "0139988776",
-    "service": "Hair Coloring",
-    "remarks": "Dark brown shade",
-    "date_book": "2025-09-06",
-    "time_book": "3:15 PM",
-    "price": 120,
-    "status": "cancelled"
-  },
-  {
-    "name": "Michael Lee",
-    "phone_number": "0112233445",
-    "service": "Manicure",
-    "remarks": "French tips style",
+    "name": "John Doe",
+    "phone_number": "0149988776",
+    "service": "Beard Trim",
+    "remarks": "Shape it sharp",
     "date_book": "2025-09-07",
-    "time_book": "12:00 PM",
-    "price": 45,
-    "status": "pending"
+    "time_book": "5:00 PM",
+    "price": 5,
+    "status": "Cancelled",
+    "payment": "Cash"
   },
   {
-    "name": "Farah Nadia",
-    "phone_number": "0145678910",
-    "service": "Pedicure",
-    "remarks": "",
-    "date_book": "2025-09-07",
-    "time_book": "1:30 PM",
-    "price": 55,
-    "status": "completed"
+    "name": "Fatimah Binti Osman",
+    "phone_number": "0172233445",
+    "service": "Haircut",
+    "remarks": "Short bob style",
+    "date_book": "2025-09-08",
+    "time_book": "11:00 AM",
+    "price": 20,
+    "status": "Confirmed",
+    "payment": "E-Wallet"
+  },
+  {
+    "name": "Michael Tan",
+    "phone_number": "0161122334",
+    "service": "Hair Colour",
+    "remarks": "Ash grey colour",
+    "date_book": "2025-09-09",
+    "time_book": "3:00 PM",
+    "price": 30,
+    "status": "Pending",
+    "payment": "Cash"
   }
 ]
